@@ -1761,6 +1761,8 @@ static einline void via_sstep1 (void)
 	old_via_ca1 =via_ca1;// NEW
 
 }
+static int cheatDotCycleCount = 0;
+static int startDraw=0;
 
 static einline void alg_addline(
       long x0, long y0,
@@ -1768,6 +1770,13 @@ static einline void alg_addline(
 {
    unsigned long key;
    long index;
+
+   int isDot = (x0==x1) && (y0==y1);
+   	  if (isDot)
+	  {
+		speed = 127;
+		color = 127;
+	  }
 
 
 	if (cyclesRunning-lastAddLine<15)
@@ -1805,9 +1814,12 @@ static einline void alg_addline(
          x0 == vectors_draw[index].x0 &&
          y0 == vectors_draw[index].y0 &&
          x1 == vectors_draw[index].x1 &&
-         y1 == vectors_draw[index].y1) {
+         y1 == vectors_draw[index].y1)
+   {
       vectors_draw[index].color = color;
-   } else {
+   }
+   else
+   {
       /* missed on the draw list, now check if the line to be drawn is in
        * the erase list ... if it is, "invalidate" it on the erase list.
        */
@@ -1842,7 +1854,6 @@ static einline void alg_addline(
 }
 
 /* perform a single cycle worth of analog emulation */
-
 static einline void alg_sstep (void)
 {
    long sig_dx=0, sig_dy=0;
@@ -1875,7 +1886,8 @@ static einline void alg_sstep (void)
       {
 
          /* start a new vector */
-
+cheatDotCycleCount=0;
+startDraw=cyclesRunning;
          alg_vectoring = 1;
          alg_vector_x0 = alg_curr_x + DELAYS[TIMER_BLANK_OFF_CHANGE]*alg_xsh;
          alg_vector_y0 = alg_curr_y + DELAYS[TIMER_BLANK_OFF_CHANGE]*alg_ysh;
@@ -1905,6 +1917,9 @@ static einline void alg_sstep (void)
 
 		if (sig_blank == 0)
 		{
+cheatDotCycleCount=cyclesRunning-startDraw;
+startDraw=cyclesRunning;
+
 			alg_addline (alg_vector_x0, 
 						 alg_vector_y0, 
 						 alg_vector_x1 + DELAYS[TIMER_BLANK_ON_CHANGE]*alg_xsh, 
@@ -1932,7 +1947,10 @@ static einline void alg_sstep (void)
           */
 //		int rampStartCheck =  ((!alg_ramping) && (sig_ramp== 0));
 //		if (!rampStartCheck)
-				alg_addline (alg_vector_x0, 
+cheatDotCycleCount=cyclesRunning-startDraw;
+startDraw=cyclesRunning;
+
+				alg_addline (alg_vector_x0,
 							 alg_vector_y0, 
 							 alg_vector_x1, 
 							 alg_vector_y1, 
@@ -1998,12 +2016,16 @@ static einline void alg_sstep (void)
 		// drift only, when not integrating - or?
 		if (sig_ramp != 0)
 		{
+if (sig_dx != 0) // ensure dots are dots
 			alg_curr_x-= config_drift_x;
+if (sig_dy != 0)
 			alg_curr_y-= config_drift_y;
 		}
 		else
 		{
+if (sig_dx != 0) // ensure dots are dots
 			alg_curr_x-= config_drift_x/5.0;
+if (sig_dy != 0)
 			alg_curr_y-= config_drift_y/5.0;
 		}
 	}
