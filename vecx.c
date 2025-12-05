@@ -1893,8 +1893,8 @@ startDraw=cyclesRunning;
          alg_vector_y0 = alg_curr_y + DELAYS[TIMER_BLANK_OFF_CHANGE]*alg_ysh;
          alg_vector_x1 = alg_curr_x;
          alg_vector_y1 = alg_curr_y;
-         alg_vector_dx = sig_dx;
-         alg_vector_dy = sig_dy;
+		 alg_vector_dx = alg_xsh;
+		 alg_vector_dy = -alg_ysh;
 		 alg_ramping = (sig_ramp== 0);
          alg_vector_color = makeUnsigned(alg_zsh);
 // beware side effects of this kind of macro!
@@ -1936,12 +1936,14 @@ startDraw=cyclesRunning;
 						 alg_vector_color, alg_vector_speed);
 		}
       }
-      else if (((sig_dx != alg_vector_dx) && (sig_ramp== 0)) || 
-	           ((sig_dy != alg_vector_dy)&& (sig_ramp== 0)) || 
+      else if (((alg_xsh != alg_vector_dx) && (sig_ramp== 0)) || 
+	           ((-alg_ysh != alg_vector_dy)&& (sig_ramp== 0)) || 
 			   (makeUnsigned(alg_zsh) != alg_vector_color) || 
-			   ((sig_ramp == 0) != alg_ramping)
+// removed Dec 2025			   ((sig_ramp == 0) != alg_ramping)
 			   )
-      {
+      
+	  ww
+	  {
          /* the parameters of the vectoring processing has changed.
           * so end the current line.
           */
